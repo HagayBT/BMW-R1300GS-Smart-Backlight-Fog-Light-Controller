@@ -2,9 +2,9 @@
 //  EasierCan.ino  —  BMW R1300GS CAN Bus Controller
 //  Features: Knight Rider startup, brake light,
 //            wave sequential turn signals,
-//            MOSFET fog lights (on when engine running >10s,
+//            MOSFET fog lights (on when engine running >5s,
 //            blink with active turn signal),
-//            strobe mode (triple high-beam press → 5s rapid flash)
+//            strobe mode (triple high-beam press → 2s rapid flash)
 // ============================================================
 
 #include <Adafruit_NeoPixel.h>
@@ -40,14 +40,14 @@
 // TIMING CONSTANTS
 // ==========================================
 // Fog lights come on this many ms after engine starts running
-#define FOG_ENGINE_DELAY_MS  10000UL
+#define FOG_ENGINE_DELAY_MS  5000UL
 // RPM threshold for "engine running"
-#define ENGINE_RPM_THRESHOLD  300
+#define ENGINE_RPM_THRESHOLD  50
 
 // Strobe: 3 high-beam presses within this window triggers strobe
-#define STROBE_WINDOW_MS  3000UL
+#define STROBE_WINDOW_MS  2000UL
 // How long strobe runs
-#define STROBE_DURATION_MS 5000UL
+#define STROBE_DURATION_MS 2000UL
 // Strobe blink period (50% duty cycle)
 #define STROBE_PERIOD_MS    100UL
 
