@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EasierCan — BMW R1300GS</title>
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bmw-blue:    #1C69D4;
+      --bmw-blue-dk: #1450A0;
+      --bmw-red:     #E30613;
+      --bg:          #0f0f0f;
+      --card:        #1a1a1a;
+      --card2:       #222222;
+      --border:      #2e2e2e;
+      --text:        #e8e8e8;
+      --text-dim:    #888;
+      --green:       #22c55e;
+      --yellow:      #f59e0b;
+      --red:         #ef4444;
+      --radius:      10px;
+      --shadow:      0 4px 24px rgba(0,0,0,.45);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 48px;
+    }
+
+    /* ── Header ────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+      border-bottom: 2px solid var(--bmw-blue);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+
+    .bmw-gs-icon { flex-shrink: 0; width: 52px; height: 52px; }
+
+    .header-text h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #fff;
+    }
+    .header-text p {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Two-column top row ─────────────────────────────────── */
+    .top-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 720px) { .top-row { grid-template-columns: 1fr; } }
+
+    /* ── Card ───────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--bmw-blue);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ── Buttons ───────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .18s, transform .1s, opacity .18s, border-color .15s, color .15s;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary   { background: var(--bmw-blue); color: #fff; }
+    .btn-primary:hover { background: var(--bmw-blue-dk); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--bmw-blue); color: var(--bmw-blue); }
+
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid #3a1a1a; }
+    .btn-danger:hover { background: #2a0f0f; border-color: var(--red); }
+
+    /* ── Status pill ───────────────────────────────────────── */
+    .connect-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 14px; border-radius: 999px;
+      font-size: .82rem; font-weight: 500;
+      background: var(--card2); border: 1px solid var(--border);
+      user-select: none;
+    }
+    .status-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .status-dot.disconnected { background: var(--red); }
+    .status-dot.connecting   { background: var(--yellow); animation: pulse 1s infinite; }
+    .status-dot.connected    { background: var(--green); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .device-name { font-size:.78rem; color:var(--text-dim); margin-left:auto; }
+
+    .ble-warning {
+      background: rgba(234,179,8,.08); border: 1px solid rgba(234,179,8,.25);
+      border-radius: 8px; padding: 10px 16px; font-size: .8rem;
+      color: var(--yellow); display: none; margin-top: 12px;
+    }
+    .ble-warning.show { display: block; }
+
+    /* ── Startup ───────────────────────────────────────────── */
+    .startup-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .startup-row label { font-size:.88rem; color:var(--text-dim); white-space:nowrap; }
+
+    /* ── Form controls ─────────────────────────────────────── */
+    select, input[type="number"] {
+      background: var(--card2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px 10px; font-size: .85rem; font-family: inherit;
+      outline: none; transition: border-color .15s;
+      appearance: none; -webkit-appearance: none;
+    }
+    select {
+      padding-right: 26px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+    }
+    select:focus, input[type="number"]:focus { border-color: var(--bmw-blue); }
+    input[type="number"] { width: 80px; text-align: center; }
+
+    /* ── Test Events ────────────────────────────────────────── */
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 600px) {
+      .test-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .test-cell { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+    .test-lbl  {
+      font-size: .68rem; font-weight: 600; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--text-dim); text-align: center;
+    }
+    .btn-sim {
+      padding: 14px 6px; border-radius: 8px; text-align: center;
+      border: 1.5px solid var(--border); background: var(--card2);
+      color: var(--text-dim); font-size: .82rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+      display: block; width: 100%; user-select: none; -webkit-user-select: none;
+    }
+    .btn-sim:hover              { border-color: #444; color: var(--text); }
+    .btn-sim.sim-on             { background: rgba(34,197,94,.12); border-color: var(--green); color: var(--green); }
+    .btn-sim.sim-pressed        { background: rgba(245,158,11,.12); border-color: var(--yellow); color: var(--yellow); }
+    .btn-sim:active             { transform: scale(0.97); }
+
+    /* ── Output table ──────────────────────────────────────── */
+    .table-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+      min-width: 560px;
+    }
+
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: .68rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr { border-bottom: none; transition: background .12s; }
+    tbody td { padding: 5px 10px; vertical-align: middle; }
+
+    tbody tr.ev-sep td {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    tbody tr.ev-row-1 td { padding-top: 10px; }
+
+    tbody tr.ev-row-1:hover td,
+    tbody tr.ev-row-1:hover + tr td { background: rgba(255,255,255,.025); }
+
+    .output-cell { vertical-align: middle; white-space: nowrap; }
+    .output-name  { font-weight: 600; color: var(--text); }
+    .output-badge {
+      display: inline-block;
+      font-size: .66rem; font-weight: 600;
+      padding: 2px 6px; border-radius: 4px;
+      letter-spacing: .05em; margin-left: 5px;
+    }
+    .badge-led { background: rgba(99,102,241,.15); color:#818cf8; border:1px solid rgba(99,102,241,.25); }
+    .badge-12v { background: rgba(234,179,8,.12);  color:#ca8a04; border:1px solid rgba(234,179,8,.20); }
+
+    .ev-label {
+      display: inline-block;
+      font-size: .66rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px;
+      letter-spacing: .06em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .ev-label-1 { background: rgba(28,105,212,.15); color: #60a5fa; border: 1px solid rgba(28,105,212,.30); }
+    .ev-label-2 { background: rgba(234,179,8,.12);  color: #fbbf24; border: 1px solid rgba(234,179,8,.25); }
+
+    /* ── Advanced vars ─────────────────────────────────────── */
+    .vars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .var-row {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .var-row:hover { border-color: #3a3a3a; }
+    .var-info { flex:1; min-width:0; }
+    .var-name {
+      font-size: .8rem; font-weight: 600;
+      font-family: 'Consolas', monospace; color: #a5b4fc;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .var-unit { font-size:.68rem; color:var(--text-dim); margin-top:2px; }
+
+    /* ── Action row ────────────────────────────────────────── */
+    .actions-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+
+    .btn-read {
+      background: transparent; color: #22d3ee;
+      border: 1px solid rgba(34,211,238,.25);
+    }
+    .btn-read:hover { border-color: #22d3ee; background: rgba(34,211,238,.08); }
+    .btn-read.loading { opacity: .6; cursor: wait; }
+    .btn-read.loading svg { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ────────────────────────────────────────────── */
+    footer { text-align:center; font-size:.7rem; color:#444; margin-top:12px; letter-spacing:.05em; }
+
+    /* ── PIN Modal ──────────────────────────────────────────── */
+    .pin-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.80);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pin-box {
+      background: var(--card);
+      border: 1px solid var(--bmw-blue);
+      border-radius: var(--radius);
+      padding: 36px 40px;
+      min-width: 280px; max-width: 340px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.7);
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .pin-box-title {
+      font-size: .95rem; font-weight: 700; color: #fff; letter-spacing: .04em;
+    }
+    .pin-box-sub { font-size: .78rem; color: var(--text-dim); }
+    #pinInput {
+      width: 140px; font-size: 2rem; font-weight: 700;
+      letter-spacing: .5em; text-align: center;
+      background: var(--card2); color: #fff;
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Consolas', monospace;
+      transition: border-color .15s;
+    }
+    #pinInput:focus { border-color: var(--bmw-blue); outline: none; }
+    .pin-error { color: var(--red); font-size: .8rem; min-height: 1em; }
+
+    /* ── Change-PIN row (shown after auth) ──────────────────── */
+    .change-pin-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 14px; flex-wrap: wrap;
+    }
+    .change-pin-label { font-size: .8rem; color: var(--text-dim); white-space: nowrap; }
+    #newPinInput {
+      width: 80px; font-size: 1rem; font-weight: 600;
+      letter-spacing: .35em; text-align: center;
+      background: var(--card2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px 10px; font-family: 'Consolas', monospace;
+      transition: border-color .15s;
+    }
+    #newPinInput:focus { border-color: var(--bmw-blue); outline: none; }
+
+    @media (max-width:600px) {
+      header { padding:14px 16px; }
+      .card  { padding:16px; }
+      .device-name { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     PIN AUTHENTICATION MODAL
+═══════════════════════════════════════════════════════ -->
+<div id="pinOverlay" class="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--bmw-blue)"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <div class="pin-box-title">Enter PIN</div>
+    <div class="pin-box-sub">Default PIN is 0000</div>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="4"
+           placeholder="••••" autocomplete="off"
+           onkeydown="if(event.key==='Enter')submitPin()">
+    <div id="pinError" class="pin-error"></div>
+    <button class="btn btn-primary" onclick="submitPin()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Unlock
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════ -->
+<header>
+  <svg class="bmw-gs-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="inner-shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur"/>
+        <feOffset dx="0" dy="1"/>
+        <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadow"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0"/>
+      </filter>
+    </defs>
+    <path d="M24 24 L24 4 A20 20 0 0 1 41.32 34 Z" fill="#1C69D4"/>
+    <path d="M24 24 L41.32 34 A20 20 0 0 1 6.68 34 Z" fill="#ffffff"/>
+    <path d="M24 24 L6.68 34 A20 20 0 0 1 24 4 Z" fill="#E30613"/>
+    <line x1="24" y1="24" x2="24"    y2="4"  stroke="#0f0f0f" stroke-width="1.4"/>
+    <line x1="24" y1="24" x2="41.32" y2="34" stroke="#0f0f0f" stroke-width="1.4"/>
+    <line x1="24" y1="24" x2="6.68"  y2="34" stroke="#0f0f0f" stroke-width="1.4"/>
+    <circle cx="24" cy="24" r="20" fill="none" stroke="#ffffff" stroke-width="2.2"/>
+    <circle cx="24" cy="24" r="8.5" fill="#0f0f0f"/>
+    <circle cx="24" cy="24" r="8.5" fill="none" stroke="#3a3a3a" stroke-width="0.8"/>
+    <text x="24" y="27.8" text-anchor="middle"
+          font-family="Arial, Helvetica, sans-serif" font-weight="900"
+          font-size="8" letter-spacing="0.8" fill="#e8e8e8">GS</text>
+  </svg>
+  <div class="header-text">
+    <h1>EasierCan</h1>
+    <p>BMW R1300GS · CAN Bus Controller</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ════════════════════════════════════════════════════
+       BLUETOOTH  +  STARTUP SEQUENCE  (two columns)
+  ═══════════════════════════════════════════════════════ -->
+  <div class="top-row">
+
+    <div class="card">
+      <div class="card-title">Bluetooth</div>
+      <div class="connect-row">
+        <button class="btn btn-primary" id="btnConnect" onclick="toggleConnect()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 6.5l11 11M17.5 6.5L12 12l5.5 5.5M6.5 17.5L12 12"/>
+          </svg>
+          Connect
+        </button>
+        <div class="status-pill">
+          <span class="status-dot disconnected" id="statusDot"></span>
+          <span id="statusText">Disconnected</span>
+        </div>
+        <span class="device-name" id="deviceName"></span>
+      </div>
+      <div class="ble-warning" id="bleWarning">
+        Web Bluetooth is not supported in this browser. Use Chrome on Android or desktop.
+      </div>
+      <!-- shown only after successful PIN authentication -->
+      <div id="changePinRow" class="change-pin-row" style="display:none">
+        <span class="change-pin-label">Change PIN:</span>
+        <input id="newPinInput" type="password" inputmode="numeric" maxlength="4"
+               placeholder="••••" autocomplete="off"
+               onkeydown="if(event.key==='Enter')changePin()">
+        <button class="btn btn-ghost" onclick="changePin()" style="padding:7px 14px;font-size:.82rem">
+          Update PIN
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Startup Sequence</div>
+      <div class="startup-row">
+        <label for="startupSelect">Animation on power-on:</label>
+        <select id="startupSelect">
+          <option value="0">None</option>
+          <option value="1">Random Startup</option>
+          <option value="2" selected>Night Rider</option>
+          <option value="3">Split / BMW Sweep</option>
+          <option value="4">Converge &amp; Explode</option>
+          <option value="5">Heartbeat</option>
+          <option value="6">Comet / Meteor</option>
+          <option value="7">Stack (Tetris)</option>
+          <option value="8">Twinkle Fade-In</option>
+          <option value="9">Thunder</option>
+          <option value="10">Breathe / Pulse</option>
+          <option value="11">Ping Pong</option>
+        </select>
+      </div>
+      <div class="actions-row">
+        <button class="btn btn-ghost" onclick="sendStartup()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          Send to Device
+        </button>
+        <button class="btn btn-read" id="btnReadStartup" onclick="readStartup()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Read from Device
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /.top-row -->
+
+  <!-- ════════════════════════════════════════════════════
+       TEST EVENTS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">Test Events</div>
+
+    <!-- Row 1: Power On · Engine Running · Hazard · Horn -->
+    <!-- Row 2: Signal Left · High Beam · Brake · Signal Right -->
+    <div class="test-grid">
+
+      <!-- R1: Power On (toggle) -->
+      <div class="test-cell">
+        <div class="test-lbl">Power On</div>
+        <button id="sim_power_on" class="btn-sim"
+          onclick="simToggle('power_on','sim_power_on')">Off</button>
+      </div>
+
+      <!-- R1: Engine Running (toggle) -->
+      <div class="test-cell">
+        <div class="test-lbl">Engine Running</div>
+        <button id="sim_engine" class="btn-sim"
+          onclick="simToggle('engine','sim_engine')">Off</button>
+      </div>
+
+      <!-- R1: Hazard (toggle) -->
+      <div class="test-cell">
+        <div class="test-lbl">Hazard</div>
+        <button id="sim_hazard" class="btn-sim"
+          onclick="simToggle('hazard','sim_hazard')">Off</button>
+      </div>
+
+      <!-- R1: Horn (momentary) -->
+      <div class="test-cell">
+        <div class="test-lbl">Horn</div>
+        <button class="btn-sim" onclick="simMomentary('horn')">Press</button>
+      </div>
+
+      <!-- R2: Signal Left (hold) -->
+      <div class="test-cell">
+        <div class="test-lbl">◀ Signal Left</div>
+        <button id="sim_signal_left" class="btn-sim"
+          onmousedown="simDown('signal_left','sim_signal_left')"
+          onmouseup="simUp('signal_left','sim_signal_left')"
+          onmouseleave="simUp('signal_left','sim_signal_left')"
+          ontouchstart="simDown('signal_left','sim_signal_left');event.preventDefault()"
+          ontouchend="simUp('signal_left','sim_signal_left')"
+          ontouchcancel="simUp('signal_left','sim_signal_left')">Hold</button>
+      </div>
+
+      <!-- R2: High Beam (hold) -->
+      <div class="test-cell">
+        <div class="test-lbl">High Beam</div>
+        <button id="sim_high_beam" class="btn-sim"
+          onmousedown="simDown('high_beam','sim_high_beam')"
+          onmouseup="simUp('high_beam','sim_high_beam')"
+          onmouseleave="simUp('high_beam','sim_high_beam')"
+          ontouchstart="simDown('high_beam','sim_high_beam');event.preventDefault()"
+          ontouchend="simUp('high_beam','sim_high_beam')"
+          ontouchcancel="simUp('high_beam','sim_high_beam')">Hold</button>
+      </div>
+
+      <!-- R2: Brake (hold) -->
+      <div class="test-cell">
+        <div class="test-lbl">Brake</div>
+        <button id="sim_brake" class="btn-sim"
+          onmousedown="simDown('brake','sim_brake')"
+          onmouseup="simUp('brake','sim_brake')"
+          onmouseleave="simUp('brake','sim_brake')"
+          ontouchstart="simDown('brake','sim_brake');event.preventDefault()"
+          ontouchend="simUp('brake','sim_brake')"
+          ontouchcancel="simUp('brake','sim_brake')">Hold</button>
+      </div>
+
+      <!-- R2: Signal Right (hold) -->
+      <div class="test-cell">
+        <div class="test-lbl">Signal Right ▶</div>
+        <button id="sim_signal_right" class="btn-sim"
+          onmousedown="simDown('signal_right','sim_signal_right')"
+          onmouseup="simUp('signal_right','sim_signal_right')"
+          onmouseleave="simUp('signal_right','sim_signal_right')"
+          ontouchstart="simDown('signal_right','sim_signal_right');event.preventDefault()"
+          ontouchend="simUp('signal_right','sim_signal_right')"
+          ontouchcancel="simUp('signal_right','sim_signal_right')">Hold</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       OUTPUT CONFIGURATION
+  ═══════════════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">Output Configuration</div>
+
+    <div class="table-scroll">
+      <table id="outputTable">
+        <thead>
+          <tr>
+            <th>Output</th>
+            <th>Function</th>
+            <th>Event</th>
+            <th>Trigger</th>
+            <th>Action</th>
+            <th>Delay (s)</th>
+          </tr>
+        </thead>
+        <tbody id="outputBody">
+          <!-- Rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-ghost" onclick="sendOutputConfig()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+        Send to Device
+      </button>
+      <button class="btn btn-read" id="btnReadOutputs" onclick="readOutputConfig()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Read from Device
+      </button>
+      <button class="btn btn-danger" onclick="resetOutputs()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset to Defaults
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
+       ADVANCED VARIABLES
+  ═══════════════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">Advanced Variables</div>
+
+    <div class="vars-grid" id="varsGrid"></div>
+
+    <div class="actions-row">
+      <button class="btn btn-ghost" onclick="sendAdvanced()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+        Send to Device
+      </button>
+      <button class="btn btn-read" id="btnReadAdvanced" onclick="readAdvanced()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Read from Device
+      </button>
+      <button class="btn btn-danger" onclick="resetAdvanced()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset to Defaults
+      </button>
+    </div>
+  </div>
+
+  <footer>EasierCan v2.0 · BMW R1300GS (KA1) · ESP32 TWAI + BLE</footer>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════
+  // DATA
+  // ══════════════════════════════════════════════════════
+  const FUNCTIONS = ["Accessories","Air Horn","Brake Light","Fog Light Left","Fog Light Right","LED Strip","None"];
+  const EVENTS    = ["Brake","Engine Running","Hazard","High Beam","High Beam x3","Horn","None","Power On","Signal Left","Signal Right"];
+  const ACTIONS   = ["Blink","None","Off","On","Strobe","Wave"];
+  const DELAYS    = [0,1,2,4,8,16,32,64,128];
+
+  const OUTPUT_DEFAULTS = [
+    { name:"LED Left Strip",  badge:"led", func:"LED Strip",       ev1:"Brake",          a1:"On",     d1:0, ev2:"Signal Left",  a2:"Wave",   d2:0 },
+    { name:"LED Right Strip", badge:"led", func:"LED Strip",       ev1:"Brake",          a1:"On",     d1:0, ev2:"Signal Right", a2:"Wave",   d2:0 },
+    { name:"12v Output 1",    badge:"12v", func:"Fog Light Left",  ev1:"Engine Running", a1:"On",     d1:8,  ev2:"High Beam x3", a2:"Strobe", d2:0 },
+    { name:"12v Output 2",    badge:"12v", func:"Accessories",     ev1:"Power On",       a1:"On",     d1:16, ev2:"None",         a2:"None",   d2:0 },
+    { name:"12v Output 3",    badge:"12v", func:"Fog Light Right", ev1:"Engine Running", a1:"On",     d1:8,  ev2:"High Beam x3", a2:"Strobe", d2:0 },
+  ];
+
+  const ADVANCED_DEFAULTS = [
+    { key:"NUM_LEDS",             val:9,    min:1,    max:144,  step:1,    unit:"LEDs" },
+    { key:"NUM_BRAKE_LEDS",       val:3,    min:0,    max:20,   step:1,    unit:"LEDs" },
+    { key:"ENGINE_RPM_THRESHOLD", val:50,   min:0,    max:500,  step:10,   unit:"RPM"  },
+    { key:"STROBE_WINDOW_MS",     val:2,    min:0.5,  max:10,   step:0.5,  unit:"sec"  },
+    { key:"STROBE_DURATION_MS",   val:2,    min:0.5,  max:30,   step:0.5,  unit:"sec"  },
+    { key:"STROBE_PERIOD_MS",     val:0.1,  min:0.05, max:1,    step:0.05, unit:"sec"  },
+    { key:"WAVE_STEP_MS",         val:80,   min:10,   max:500,  step:10,   unit:"ms"   },
+    { key:"WAVE_HOLD_MS",         val:160,  min:50,   max:1000, step:10,   unit:"ms"   },
+    { key:"WAVE_PAUSE_MS",        val:320,  min:100,  max:2000, step:20,   unit:"ms"   },
+  ];
+
+  // ══════════════════════════════════════════════════════
+  // HELPERS
+  // ══════════════════════════════════════════════════════
+  function makeSelect(opts, selected, id) {
+    const s = document.createElement('select');
+    s.id = id;
+    opts.forEach(o => {
+      const el = document.createElement('option');
+      el.value = el.textContent = o;
+      if (String(o) === String(selected)) el.selected = true;
+      s.appendChild(el);
+    });
+    return s;
+  }
+
+  function makeDelaySelect(selected, id) {
+    const s = document.createElement('select');
+    s.id = id;
+    DELAYS.forEach(d => {
+      const el = document.createElement('option');
+      el.value = el.textContent = d;
+      if (d === selected) el.selected = true;
+      s.appendChild(el);
+    });
+    return s;
+  }
+
+  // ══════════════════════════════════════════════════════
+  // OUTPUT TABLE — two rows per output, no test column
+  // ══════════════════════════════════════════════════════
+  function buildOutputTable() {
+    const tbody = document.getElementById('outputBody');
+    tbody.innerHTML = '';
+
+    OUTPUT_DEFAULTS.forEach((row, i) => {
+      const isLast = (i === OUTPUT_DEFAULTS.length - 1);
+
+      // ── Row A: Output | Function | Event 1 ──────────────
+      const trA = document.createElement('tr');
+      trA.className = 'ev-row ev-row-1';
+      const isLed = (row.badge === 'led');
+
+      const tdName = document.createElement('td');
+      tdName.rowSpan = 2;
+      tdName.className = 'output-cell';
+      tdName.innerHTML = `<span class="output-name">${row.name}</span>
+        <span class="output-badge badge-${row.badge}">${row.badge === 'led' ? 'LED' : '12V'}</span>`;
+      trA.appendChild(tdName);
+
+      const tdFunc = document.createElement('td');
+      tdFunc.rowSpan = 2;
+      tdFunc.style.verticalAlign = 'middle';
+      if (isLed) {
+        // LED strips are always LED Strip — show static label, no dropdown
+        tdFunc.innerHTML = '<span style="font-size:.82rem;color:var(--text-dim);padding:4px 6px;display:inline-block;">LED Strip</span>';
+      } else {
+        // MOSFET outputs: all functions except LED Strip
+        const mosfetFuncs = FUNCTIONS.filter(f => f !== 'LED Strip');
+        tdFunc.appendChild(makeSelect(mosfetFuncs, row.func, `func_${i}`));
+      }
+      trA.appendChild(tdFunc);
+
+      const tdLbl1 = document.createElement('td');
+      tdLbl1.innerHTML = `<span class="ev-label ev-label-1">${isLed ? 'Brake&nbsp;LEDs' : 'Event&nbsp;1'}</span>`;
+      trA.appendChild(tdLbl1);
+
+      // Wave is LED-only (sequential pixel fill makes no sense on a digital output)
+      const availActions = isLed ? ACTIONS : ACTIONS.filter(a => a !== 'Wave');
+
+      const tdEv1 = document.createElement('td'); tdEv1.appendChild(makeSelect(EVENTS,       row.ev1, `ev1_${i}`)); trA.appendChild(tdEv1);
+      const tdA1  = document.createElement('td'); tdA1.appendChild(makeSelect(availActions,  row.a1,  `a1_${i}`));  trA.appendChild(tdA1);
+      const tdD1  = document.createElement('td'); tdD1.appendChild(makeDelaySelect(row.d1, `d1_${i}`));             trA.appendChild(tdD1);
+
+      tbody.appendChild(trA);
+
+      // ── Row B: Event 2 ───────────────────────────────────
+      const trB = document.createElement('tr');
+      trB.className = 'ev-row ev-row-2' + (isLast ? '' : ' ev-sep');
+
+      const tdLbl2 = document.createElement('td');
+      tdLbl2.innerHTML = `<span class="ev-label ev-label-2">${isLed ? 'Indicator' : 'Event&nbsp;2'}</span>`;
+      trB.appendChild(tdLbl2);
+
+      const tdEv2 = document.createElement('td'); tdEv2.appendChild(makeSelect(EVENTS,       row.ev2, `ev2_${i}`)); trB.appendChild(tdEv2);
+      const tdA2  = document.createElement('td'); tdA2.appendChild(makeSelect(availActions,  row.a2,  `a2_${i}`));  trB.appendChild(tdA2);
+      const tdD2  = document.createElement('td'); tdD2.appendChild(makeDelaySelect(row.d2, `d2_${i}`));             trB.appendChild(tdD2);
+
+      tbody.appendChild(trB);
+    });
+  }
+
+  function resetOutputs() { buildOutputTable(); flash('Output table reset to defaults.'); }
+
+  // ══════════════════════════════════════════════════════
+  // ADVANCED VARIABLES
+  // ══════════════════════════════════════════════════════
+  function buildAdvanced() {
+    const grid = document.getElementById('varsGrid');
+    grid.innerHTML = '';
+    ADVANCED_DEFAULTS.forEach(v => {
+      const div = document.createElement('div');
+      div.className = 'var-row';
+      div.innerHTML = `
+        <div class="var-info">
+          <div class="var-name">${v.key}</div>
+          <div class="var-unit">${v.unit}</div>
+        </div>
+        <input type="number" id="adv_${v.key}"
+          value="${v.val}" min="${v.min}" max="${v.max}" step="${v.step}" />
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  function resetAdvanced() { buildAdvanced(); flash('Advanced variables reset to defaults.'); }
+
+  // ══════════════════════════════════════════════════════
+  // BLUETOOTH
+  // ══════════════════════════════════════════════════════
+  let bleDevice = null, bleChar = null, connected = false, bleAuthenticated = false;
+
+  const BLE_SERVICE = '0000ffe0-0000-1000-8000-00805f9b34fb';
+  const BLE_CHAR    = '0000ffe1-0000-1000-8000-00805f9b34fb';
+
+  function setStatus(state, text, device) {
+    document.getElementById('statusDot').className = `status-dot ${state}`;
+    document.getElementById('statusText').textContent = text;
+    document.getElementById('deviceName').textContent = device || '';
+    document.getElementById('btnConnect').innerHTML = state === 'connected'
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg> Disconnect'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5L12 12l5.5 5.5M6.5 17.5L12 12"/></svg> Connect';
+  }
+
+  async function toggleConnect() {
+    if (!navigator.bluetooth) { document.getElementById('bleWarning').classList.add('show'); return; }
+    if (connected) {
+      if (bleDevice?.gatt.connected) bleDevice.gatt.disconnect();
+      connected = false; setStatus('disconnected', 'Disconnected'); return;
+    }
+    try {
+      setStatus('connecting', 'Connecting…');
+      bleDevice = await navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'EasierCan' }], optionalServices: [BLE_SERVICE]
+      });
+      bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+      const server  = await bleDevice.gatt.connect();
+      const service = await server.getPrimaryService(BLE_SERVICE);
+      bleChar = await service.getCharacteristic(BLE_CHAR);
+      await bleChar.startNotifications();
+      bleChar.addEventListener('characteristicvaluechanged', onIncoming);
+      connected = true; setStatus('connected', 'Connected', bleDevice.name);
+      showPinModal();   // wait for PIN before reading config
+    } catch (err) {
+      connected = false; setStatus('disconnected', 'Disconnected');
+      if (err.name !== 'NotFoundError') console.warn('BLE:', err);
+    }
+  }
+
+  function onDisconnected() {
+    connected = false; bleChar = null; bleAuthenticated = false;
+    setStatus('disconnected', 'Disconnected');
+    hidePinModal();
+    document.getElementById('changePinRow').style.display = 'none';
+  }
+
+  // ══════════════════════════════════════════════════════
+  // INCOMING DATA — device → UI
+  // ══════════════════════════════════════════════════════
+  let _incomingBuf = '';
+
+  function onIncoming(event) {
+    _incomingBuf += new TextDecoder().decode(event.target.value);
+    const lines = _incomingBuf.split('\n');
+    _incomingBuf = lines.pop();
+    lines.forEach(line => {
+      if (!line.trim()) return;
+      try { handleIncoming(JSON.parse(line)); }
+      catch (e) { console.warn('BLE parse error:', line, e); }
+    });
+  }
+
+  function handleIncoming(data) {
+    if (data.cmd === 'auth_result') {
+      if (data.ok) {
+        bleAuthenticated = true;
+        hidePinModal();
+        document.getElementById('changePinRow').style.display = 'flex';
+        autoReadAll();
+      } else {
+        bleAuthenticated = false;
+        document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+      return;
+    }
+    if (data.cmd === 'pin_changed') {
+      if (data.ok) { flash('PIN updated successfully.'); document.getElementById('newPinInput').value = ''; }
+      else          flash('PIN change failed — must be exactly 4 digits.', true);
+      return;
+    }
+    if (data.cmd === 'outputs' && Array.isArray(data.config)) {
+      data.config.forEach((row, i) => {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        set(`func_${i}`, row.func);
+        set(`ev1_${i}`,  row.ev1);  set(`a1_${i}`, row.a1);  set(`d1_${i}`, row.d1);
+        set(`ev2_${i}`,  row.ev2);  set(`a2_${i}`, row.a2);  set(`d2_${i}`, row.d2);
+      });
+      setReadLoading('btnReadOutputs', false);
+      flash('Output config loaded from device.');
+    }
+    else if (data.cmd === 'advanced' && data.vars) {
+      Object.entries(data.vars).forEach(([key, val]) => {
+        const el = document.getElementById(`adv_${key}`);
+        if (el) el.value = val;
+      });
+      setReadLoading('btnReadAdvanced', false);
+      flash('Advanced variables loaded from device.');
+    }
+    else if (data.cmd === 'startup_cfg') {
+      const el = document.getElementById('startupSelect');
+      if (el) el.value = data.value;
+      setReadLoading('btnReadStartup', false);
+      flash('Startup sequence loaded from device.');
+    }
+  }
+
+  function setReadLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.classList.toggle('loading', loading);
+    btn.disabled = loading;
+  }
+
+  // ══════════════════════════════════════════════════════
+  // PIN AUTH
+  // ══════════════════════════════════════════════════════
+  function showPinModal() {
+    document.getElementById('pinOverlay').style.display = 'flex';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinError').textContent = '';
+    setTimeout(() => document.getElementById('pinInput').focus(), 120);
+  }
+
+  function hidePinModal() {
+    document.getElementById('pinOverlay').style.display = 'none';
+  }
+
+  async function submitPin() {
+    const pin = document.getElementById('pinInput').value;
+    if (!/^\d{4}$/.test(pin)) {
+      document.getElementById('pinError').textContent = 'Enter a 4-digit PIN.';
+      return;
+    }
+    document.getElementById('pinError').textContent = '';
+    await send({ cmd: 'auth', pin });
+  }
+
+  async function changePin() {
+    const pin = document.getElementById('newPinInput').value;
+    if (!/^\d{4}$/.test(pin)) { flash('New PIN must be exactly 4 digits.', true); return; }
+    await send({ cmd: 'change_pin', pin });
+  }
+
+  // ══════════════════════════════════════════════════════
+  // SEND
+  // ══════════════════════════════════════════════════════
+  // Send payload as BLE writes, chunked to stay within ATT MTU limits.
+  // The firmware buffers chunks and processes on '\n', so splitting is safe.
+  const BLE_CHUNK = 150; // ≤ 182 bytes (iOS minimum negotiated MTU − 3)
+
+  async function send(payload) {
+    if (!bleChar) { flash('Not connected.', true); return; }
+    const data = new TextEncoder().encode(JSON.stringify(payload) + '\n');
+    try {
+      for (let i = 0; i < data.length; i += BLE_CHUNK) {
+        await bleChar.writeValue(data.slice(i, i + BLE_CHUNK));
+        if (i + BLE_CHUNK < data.length) {
+          // Small pause so the firmware loop can call processBleWrites()
+          // before the next chunk arrives and overwrites the BLE buffer.
+          await new Promise(r => setTimeout(r, 40));
+        }
+      }
+    } catch (err) {
+      console.error('BLE write error:', err);
+      flash('Send failed: ' + err.message, true);
+    }
+  }
+
+  // Auto-read all device values on connect — staggered to avoid BLE congestion
+  function autoReadAll() {
+    setTimeout(() => readStartup(),       600);
+    setTimeout(() => readOutputConfig(),  1100);
+    setTimeout(() => readAdvanced(),      1600);
+  }
+
+  async function sendStartup() {
+    await send({ cmd:'startup', value: parseInt(document.getElementById('startupSelect').value) });
+    flash('Startup sequence sent.');
+  }
+
+  function readStartup() {
+    setReadLoading('btnReadStartup', true);
+    send({ cmd: 'read_startup' });
+    setTimeout(() => { setReadLoading('btnReadStartup', false); }, 5000);
+  }
+
+  function readOutputConfig() {
+    setReadLoading('btnReadOutputs', true);
+    send({ cmd: 'read_outputs' });
+    setTimeout(() => { setReadLoading('btnReadOutputs', false); }, 5000);
+  }
+
+  function readAdvanced() {
+    setReadLoading('btnReadAdvanced', true);
+    send({ cmd: 'read_advanced' });
+    setTimeout(() => { setReadLoading('btnReadAdvanced', false); }, 5000);
+  }
+
+  async function sendOutputConfig() {
+    const cfg = OUTPUT_DEFAULTS.map((row, i) => ({
+      func: document.getElementById(`func_${i}`)?.value ?? row.func,
+      ev1:  document.getElementById(`ev1_${i}`).value,  a1: document.getElementById(`a1_${i}`).value,
+      d1:   parseFloat(document.getElementById(`d1_${i}`).value),
+      ev2:  document.getElementById(`ev2_${i}`).value,  a2: document.getElementById(`a2_${i}`).value,
+      d2:   parseFloat(document.getElementById(`d2_${i}`).value),
+    }));
+    await send({ cmd:'outputs', config:cfg });
+    flash('Output config sent.');
+  }
+
+  async function sendAdvanced() {
+    const vars = {};
+    ADVANCED_DEFAULTS.forEach(v => { vars[v.key] = parseFloat(document.getElementById(`adv_${v.key}`).value); });
+    await send({ cmd:'advanced', vars });
+    flash('Advanced variables sent.');
+  }
+
+  // ══════════════════════════════════════════════════════
+  // TEST EVENTS — simulate CAN signals via BLE
+  // cmd: "sim"  event: string  state: bool
+  // ══════════════════════════════════════════════════════
+  const simStates = {};
+
+  // Toggle: click flips state, button stays green/off
+  async function simToggle(event, btnId) {
+    simStates[event] = !simStates[event];
+    const on = simStates[event];
+    await send({ cmd:'sim', event, state: on });
+    const btn = document.getElementById(btnId);
+    if (btn) { btn.classList.toggle('sim-on', on); btn.textContent = on ? 'On' : 'Off'; }
+  }
+
+  // Momentary: sends ON then auto-OFF after 300 ms
+  function simMomentary(event) {
+    send({ cmd:'sim', event, state: true });
+    setTimeout(() => send({ cmd:'sim', event, state: false }), 300);
+  }
+
+  // Self-return: ON while held, OFF on release
+  function simDown(event, btnId) {
+    if (simStates[event]) return;   // already down
+    simStates[event] = true;
+    send({ cmd:'sim', event, state: true });
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add('sim-pressed');
+  }
+
+  function simUp(event, btnId) {
+    if (!simStates[event]) return;  // already up
+    simStates[event] = false;
+    send({ cmd:'sim', event, state: false });
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.remove('sim-pressed');
+  }
+
+  // ══════════════════════════════════════════════════════
+  // TOAST
+  // ══════════════════════════════════════════════════════
+  let toastEl = null;
+  function flash(msg, err = false) {
+    if (toastEl) toastEl.remove();
+    toastEl = document.createElement('div');
+    toastEl.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:${err?'#7f1d1d':'#1e3a5f'};color:#fff;
+      border:1px solid ${err?'#dc2626':'#1C69D4'};
+      padding:10px 20px;border-radius:8px;font-size:.82rem;
+      z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.5);white-space:nowrap;`;
+    toastEl.textContent = msg;
+    document.body.appendChild(toastEl);
+    setTimeout(() => { toastEl?.remove(); toastEl = null; }, 2800);
+  }
+
+  // ══════════════════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════════════════
+  buildOutputTable();
+  buildAdvanced();
+
+  // Auto-submit PIN as soon as 4 digits are typed
+  document.getElementById('pinInput').addEventListener('input', function() {
+    if (this.value.length === 4) submitPin();
+  });
+</script>
+</body>
+</html>
